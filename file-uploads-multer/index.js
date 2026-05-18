@@ -1,8 +1,11 @@
 const path = require("path");
 const express = require("express");
 const multer = require("multer");
-
-
+const File = require("./models/file");
+const mongoose = require("mongoose");
+mongoose.connect("mongodb://127.0.0.1:27017/fileUploads")
+.then(() => console.log("MongoDB Connected"))
+.catch((err) => console.log(err));
 const app = express();
 const PORT = 8000;
 
@@ -25,11 +28,18 @@ app.get("/",(req,res)=>{
     return res.render("homepage");
 })
 
-app.post("/upload",upload.single("profileImage"),(req,res)=>{
-        console.log(req.body);
-        console.log(req.file);
 
-        return res.redirect("/");
+app.post("/upload", upload.single("profileImage"), async (req, res) => {
 
+    await File.create({
+        filename: req.file.filename,
+        path: req.file.path,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+    });
+
+    console.log("File saved in DB");
+
+    return res.redirect("/");
 });
 app.listen(PORT,()=>console.log(`server started at port 8000`));
